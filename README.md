@@ -47,9 +47,11 @@ It combines large language model (LLM) fluency, retrieval-augmented generation (
 
 ## Project Structure
 
-- `STTPhase/`  
-  Core speech-to-text and voice chat modules.
+- [`STTPhase/`](./STTPhase/README.md)  
+  Core speech-to-text and voice chat modules.  
 
+- [`TTSPhase/`](./TTSPhase/README.md)  
+  Text-to-speech generation using the ElevenLabs API.  
 
 ## Vision
 
