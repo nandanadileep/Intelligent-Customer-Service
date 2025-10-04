@@ -1,6 +1,6 @@
-# voiceLLM: Speech-to-Text Project
+# Intelligent-Customer-Service
 
-## Overview
+## Overview of Speech-to-Text Project
 
 **voiceLLM** is a Python-based toolkit for recording, processing, and transcribing speech audio using local models (OpenAI Whisper) and external APIs.  
 It supports real-time microphone recording, dataset handling, and batch transcription.
@@ -85,3 +85,4 @@ It supports real-time microphone recording, dataset handling, and batch transcri
 ---
 
 **Enjoy experimenting with speech-to-text!**
+
