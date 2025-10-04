@@ -53,6 +53,13 @@ It combines large language model (LLM) fluency, retrieval-augmented generation (
 - [`TTSPhase/`](./TTSPhase/README.md)  
   Text-to-speech generation using the ElevenLabs API.  
 
+- [`EndToEnd/`](./EndToEnd/README.md)  
+  EndToEnd Customer Support.
+
+```
+python -m EndToEnd.Pipeline # To Record and Speak
+```
+
 ## Vision
 
 Deliver customer care that feels truly conversational, solves problems reliably, and knows when to escalate — blending the best of AI and human support.
