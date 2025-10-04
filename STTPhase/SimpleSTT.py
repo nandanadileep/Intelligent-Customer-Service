@@ -2,36 +2,23 @@ import pyaudio
 import wave
 import keyboard
 import time
-import whisper
+import os
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
 CHUNK = 1024
-DIRECTORY_NAME = "recordedWavs"
-FILENAME = "simple_recording.wav"
 
-model = whisper.load_model("tiny")  # Change as needed
+def record_until_q(filename=None, directory="recordedWavs"):
+    """Record audio until 'q' is pressed and save to specified directory/filename."""
+    os.makedirs(directory, exist_ok=True)
+    full_path = f"{directory}/{filename}"
 
-def call_stt_api(audio_content, sample_rate):
-    """Simulates a call to a Speech-to-Text API."""
-    if len(audio_content) > 5000:
-        return f"*** [STT Result]: The user spoke {len(audio_content)} bytes of audio."
-    else:
-        return "No clear speech detected for transcription."
-
-# ...existing code...
-
-def record_until_q():
     audio = pyaudio.PyAudio()
     stream = audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
     frames = []
 
-    # Generate filename with timestamp
-    timestamp = int(time.time())
-    filename = f"{DIRECTORY_NAME}/rec_{timestamp}.wav"
-
-    print("Recording... Press 'q' to stop.")
+    print(f"Recording... Press 'q' to stop. Saving to {full_path}")
 
     while True:
         if keyboard.is_pressed('q'):
@@ -44,22 +31,17 @@ def record_until_q():
     stream.close()
     audio.terminate()
 
-    # Save to WAV file
-    with wave.open(filename, 'wb') as wf:
+    with wave.open(full_path, 'wb') as wf:
         wf.setnchannels(CHANNELS)
         wf.setsampwidth(audio.get_sample_size(FORMAT))
         wf.setframerate(RATE)
         wf.writeframes(b''.join(frames))
-    print(f"Audio saved to {filename}")
-
-    # Send to API
-    transcript = call_stt_api(b''.join(frames), RATE)
-    # NOTE: Below not working in my stupid Windows PC
-    # result = model.transcribe(f"{filename}", language="English")
-    # print(f"TRANSCRIPTION RESULT:\n{result['text']}")
-    print(f"TRANSCRIPTION RESULT:\n{transcript}")
-
-# ...existing code...
+    print(f"Audio saved to {full_path}")
+    return filename
 
 if __name__ == "__main__":
-    record_until_q()
+    import os
+    timestamp = int(time.time())
+    filename = f"rec_{timestamp}.wav"
+    directory = "recordedWavs"
+    record_until_q(filename, directory)

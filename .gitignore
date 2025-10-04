@@ -10,6 +10,7 @@ NotesVoice.txt
 # processed_text/
 # recordedWavs/
 *.tar.gz
+ffmpeg/
 # *.flac
 # *.wav
 # *.txt
