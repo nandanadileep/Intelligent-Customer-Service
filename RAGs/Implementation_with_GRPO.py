@@ -7,7 +7,11 @@ from langchain_community.llms import HuggingFacePipeline
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 import torch
+import numpy as np
+from collections import deque
+import json
 
+# Knowledge base texts
 kb_texts = [
     "How to track your Amazon order: Go to Your Orders, select the order, and click Track Package.",
     "How to cancel an order: If your order hasn't shipped, go to Your Orders, select Cancel Items.",
@@ -48,24 +52,16 @@ kb_texts = [
     "Customer service hours: Available 24/7 for most issues via chat and phone support.",
     "Report a problem: Use Help section to report issues with orders, products, or account security.",
     "A-to-z Guarantee: Protection for marketplace purchases if items don't arrive or don't match description.",
-    "Leave seller feedback: Rate third-party sellers to help other cv. Customers make informed decisions.",
+    "Leave seller feedback: Rate third-party sellers to help other customers make informed decisions.",
 ]
 
 docs = [Document(page_content=text) for text in kb_texts]
-splitter = RecursiveCharacterTextSplitter(
-    chunk_size=200,  
-    chunk_overlap=50  
-)
+splitter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=50)
 split_docs = splitter.split_documents(docs)
 
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/multi-qa-mpnet-base-dot-v1")
 vectorstore = FAISS.from_documents(split_docs, embeddings)
-retriever = vectorstore.as_retriever(
-    search_kwargs={
-        "k": 3,  
-        "fetch_k": 10  
-    }
-)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 3, "fetch_k": 10})
 
 model_path = "google/flan-t5-base"
 tokenizer = AutoTokenizer.from_pretrained(model_path)
@@ -79,10 +75,10 @@ pipe = pipeline(
     "text2text-generation",
     model=model,
     tokenizer=tokenizer,
-    max_new_tokens=150,  
-    min_new_tokens=20,   
+    max_new_tokens=150,
+    min_new_tokens=20,
     do_sample=False,
-    num_beams=2,        
+    num_beams=2,
     early_stopping=True
 )
 
@@ -100,7 +96,6 @@ PROMPT = PromptTemplate(
     input_variables=["context", "question"]
 )
 
-# Create QA chain
 qa = RetrievalQA.from_chain_type(
     llm=hf_llm,
     retriever=retriever,
@@ -109,7 +104,110 @@ qa = RetrievalQA.from_chain_type(
     return_source_documents=False
 )
 
-# Helper function to clean response
+
+class GRPOOptimizer:
+    """Group Relative Policy Optimization for improving responses"""
+    
+    def __init__(self, group_size=4, learning_rate=0.001, gamma=0.99):
+        self.group_size = group_size
+        self.learning_rate = learning_rate
+        self.gamma = gamma
+        self.response_history = deque(maxlen=100)
+        self.reward_baseline = 0.5
+        
+    def calculate_reward(self, response, query, context):
+        """Calculate reward score for a response"""
+        reward = 0.0
+        
+        word_count = len(response.split())
+        if 15 <= word_count <= 50:
+            reward += 0.3
+        elif word_count < 10:
+            reward -= 0.2
+        
+        greetings = ["hello", "hi", "greetings", "thank you", "thanks"]
+        if any(greeting in response.lower() for greeting in greetings):
+            reward += 0.2
+        
+        context_keywords = set(context.lower().split())
+        response_keywords = set(response.lower().split())
+        overlap = len(context_keywords & response_keywords)
+        if overlap > 3:
+            reward += 0.3
+        elif overlap > 1:
+            reward += 0.15
+        
+        if response.strip().endswith(('.', '!', '?')):
+            reward += 0.1
+        
+        sentences = response.split('.')
+        unique_ratio = len(set(sentences)) / max(len(sentences), 1)
+        reward += 0.1 * unique_ratio
+        
+        uncertain_phrases = ["don't have", "not sure", "unclear"]
+        if any(phrase in response.lower() for phrase in uncertain_phrases):
+            if overlap < 2:  
+                reward -= 0.1
+        
+        return max(0.0, min(1.0, reward))
+    
+    def generate_response_group(self, query, qa_chain, num_responses=None):
+        """Generate multiple responses for the same query"""
+        if num_responses is None:
+            num_responses = self.group_size
+        
+        responses = []
+        for _ in range(num_responses):
+            response = qa_chain.invoke(query)
+            responses.append(response['result'])
+        
+        return responses
+    
+    def compute_group_advantages(self, rewards):
+        """Compute advantages using group normalization"""
+        rewards = np.array(rewards)
+        mean_reward = np.mean(rewards)
+        std_reward = np.std(rewards) + 1e-8
+        
+        advantages = (rewards - mean_reward) / std_reward
+        
+        self.reward_baseline = 0.9 * self.reward_baseline + 0.1 * mean_reward
+        
+        return advantages, mean_reward
+    
+    def select_best_response(self, query, context, responses, rewards):
+        """Select the best response based on rewards"""
+        best_idx = np.argmax(rewards)
+        best_response = responses[best_idx]
+        best_reward = rewards[best_idx]
+        
+        self.response_history.append({
+            'query': query,
+            'context': context,
+            'response': best_response,
+            'reward': best_reward
+        })
+        
+        return best_response, best_reward
+    
+    def get_performance_stats(self):
+        """Get statistics on response performance"""
+        if not self.response_history:
+            return None
+        
+        rewards = [item['reward'] for item in self.response_history]
+        return {
+            'avg_reward': np.mean(rewards),
+            'max_reward': np.max(rewards),
+            'min_reward': np.min(rewards),
+            'std_reward': np.std(rewards),
+            'num_samples': len(rewards)
+        }
+
+
+grpo = GRPOOptimizer(group_size=4, learning_rate=0.001)
+
+
 def clean_response(response_text):
     """Extract only the answer portion and clean it"""
     text = response_text.strip()
@@ -125,9 +223,9 @@ def clean_response(response_text):
     sentences = []
     for sent in text.replace('!', '.').replace('?', '.').split('.'):
         sent = sent.strip()
-        if sent and len(sent) > 5:  # Ignore very short fragments
+        if sent and len(sent) > 5:
             sentences.append(sent)
-            if len(sentences) >= 2:  # Stop after 2 good sentences
+            if len(sentences) >= 3:
                 break
     
     if sentences:
@@ -139,18 +237,67 @@ def clean_response(response_text):
     return text if text else "I don't have enough information to answer that question. I will escalate this issue to a senior staff. Thank you for your time."
 
 
-def ask_query(query_text):
-    """Ask query and show answer with sources"""
-    response = qa.invoke(query_text)
-    cleaned_answer = clean_response(response['result'])
+def ask_query_with_grpo(query_text, use_grpo=True):
+    """Ask query with GRPO optimization"""
     
-    print("Query:", query_text)
-    print("Answer:", cleaned_answer)
+    retrieved_docs = retriever.get_relevant_documents(query_text)
+    context = " ".join([doc.page_content for doc in retrieved_docs[:3]])
     
-    if response.get('source_documents'):
-        print("Sources used:")
-        for i, doc in enumerate(response['source_documents'][:2], 1):
-            print(f"  {i}. {doc.page_content[:80]}...")
-    print()
+    if use_grpo:
+        print(f"Generating {grpo.group_size} candidate responses...")
+        responses = grpo.generate_response_group(query_text, qa)
+        
+        cleaned_responses = [clean_response(r) for r in responses]
+        
+        rewards = [grpo.calculate_reward(r, query_text, context) for r in cleaned_responses]
+        
+        advantages, mean_reward = grpo.compute_group_advantages(rewards)
+        
+        best_response, best_reward = grpo.select_best_response(
+            query_text, context, cleaned_responses, rewards
+        )
+        
+        print(f"\nQuery: {query_text}")
+        print(f"Answer: {best_response}")
+        print(f"\nGRPO Stats:")
+        print(f"  Best Reward: {best_reward:.3f}")
+        print(f"  Mean Reward: {mean_reward:.3f}")
+        print(f"  Reward Range: [{min(rewards):.3f}, {max(rewards):.3f}]")
+        
+        stats = grpo.get_performance_stats()
+        if stats and len(grpo.response_history) > 5:
+            print(f"\nOverall Performance (last {stats['num_samples']} queries):")
+            print(f"  Average Reward: {stats['avg_reward']:.3f}")
+            print(f"  Std Deviation: {stats['std_reward']:.3f}")
+        
+        return best_response
     
-    return cleaned_answer
+    else:
+        response = qa.invoke(query_text)
+        cleaned_answer = clean_response(response['result'])
+        
+        print(f"\nQuery: {query_text}")
+        print(f"Answer: {cleaned_answer}")
+                    
+        return cleaned_answer
+
+
+if __name__ == "__main__":
+    print("=== Testing RAG with GRPO Optimization ===\n")
+    
+    test_queries = [
+        "How do I track my order?",
+        "What is your refund policy?",
+        "Can I cancel my Prime membership?",
+        "What should I do if my package is damaged?"
+    ]
+    
+    for query in test_queries:
+        print("\n" + "="*70)
+        ask_query_with_grpo(query, use_grpo=True)
+        print("="*70)
+    
+    print("\n\nFinal Performance Summary:")
+    stats = grpo.get_performance_stats()
+    if stats:
+        print(json.dumps(stats, indent=2))
