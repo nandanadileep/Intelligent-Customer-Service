@@ -1,4 +1,5 @@
-from rags_implementation import ask_query_with_grpo
+from Implementation_with_GRPO import ask_query_with_grpo as ask_query_with_grpo
+# from rags_implementation import ask_query as ask_query_with_grpo
 
 ask_query_with_grpo("my order says shipped for last 4-5 days but didnt receive yet")
 ask_query_with_grpo("How can I track my Amazon order?")
