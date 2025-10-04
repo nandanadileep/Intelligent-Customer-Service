@@ -1,0 +1,5 @@
+Audio ID: rec_1759564825
+Sample Rate: 16000 Hz
+
+[TRANSCRIPT]: This is the automated speech recognition output for audio file rec_1759564825. The sample rate used was 16000 Hz. 
+  How do I check my Amazon order?

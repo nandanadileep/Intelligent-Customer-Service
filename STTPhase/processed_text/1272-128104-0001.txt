@@ -1,0 +1,5 @@
+Audio ID: 1272-128104-0001
+Sample Rate: 16000 Hz
+
+[TRANSCRIPT]: This is the automated speech recognition output for audio file 1272-128104-0001. The sample rate used was 16000 Hz. 
+  Nor is Mr. Quilters' manner less interesting than his matter.

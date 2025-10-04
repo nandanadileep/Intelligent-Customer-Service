@@ -1,0 +1,5 @@
+Audio ID: 1272-128104-0000
+Sample Rate: 16000 Hz
+
+[TRANSCRIPT]: This is the automated speech recognition output for audio file 1272-128104-0000. The sample rate used was 16000 Hz. 
+  Mr. Kilder is the apostle of the middle classes and we are glad to welcome his gospel.
