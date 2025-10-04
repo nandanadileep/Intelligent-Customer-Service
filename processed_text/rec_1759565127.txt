@@ -1,0 +1,5 @@
+Audio ID: rec_1759565127
+Sample Rate: 16000 Hz
+
+[TRANSCRIPT]: This is the automated speech recognition output for audio file rec_1759565127. The sample rate used was 16000 Hz. 
+  Hello, this is Customer Service speaking.

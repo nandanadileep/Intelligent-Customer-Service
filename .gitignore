@@ -1,0 +1,15 @@
+# Ignore LibriSpeech dataset and processed audio/text files
+
+LibriSpeech/
+processed_wavs/
+
+transcription_log.txt
+NotesVoice.txt
+
+# samplesWavs
+# processed_text/
+# recordedWavs/
+*.tar.gz
+# *.flac
+# *.wav
+# *.txt
