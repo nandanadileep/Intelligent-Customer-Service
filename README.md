@@ -1,88 +1,58 @@
 # Intelligent-Customer-Service
 
-## Overview of Speech-to-Text Project
+## Overview
 
-**voiceLLM** is a Python-based toolkit for recording, processing, and transcribing speech audio using local models (OpenAI Whisper) and external APIs.  
-It supports real-time microphone recording, dataset handling, and batch transcription.
-
----
-
-## Directory Structure & Main Files
-
-- **SimpleSTT.py**  
-  Record audio from your microphone until you press `q`.  
-  The recording is saved as a timestamped WAV file in the `recordedWavs` directory.  
-  Optionally, transcribe the audio using Whisper.
-
-- **wavWhisperSingleFile.py**  
-  Transcribes a single WAV file (e.g., `rec_<timestamp>.wav`) using Whisper and saves the result to `processed_text`.
-
-- **wavAPIDirectory.py**  
-  Transcribes a Directory WAV file (e.g., `rec_<timestamp>.wav`) using Whisper and saves the result to `processed_text`.
-
-- **DataSet.py**  
-  Downloads and extracts the LibriSpeech `dev-clean` dataset if not present.  
-  Converts FLAC files to WAV, loads transcripts, and prepares data for batch processing or API calls.
-
-- **STTApi.py**  
-  Downloads a sample audio file, loads it, and sends it to a placeholder speech-to-text API.  
-  Useful for testing API integration.
-
-- **recordedWavs/**  
-  Directory for microphone recordings.
-
-- **processed_wavs/**  
-  Directory for WAV files converted from the LibriSpeech dataset.
-
-- **processed_text/**  
-  Directory for storing transcription results as text files.
+**Intelligent-Customer-Service** is an advanced conversational AI platform designed to deliver natural, human-like customer support.  
+It combines large language model (LLM) fluency, retrieval-augmented generation (RAG), business logic integration, and thoughtful UX design to create a customer care layer that actually solves problems and seamlessly escalates to human agents when needed.
 
 ---
 
-## Typical Workflow
+## Key Features
 
-1. **Record Audio**  
-   Run `SimpleSTT.py` to record speech.  
-   Press `q` to stop and save the file.
+- **Conversational AI:**  
+  Multi-turn chat that feels natural and human, with optional voice input/output.
 
-2. **Transcribe Recording**  
-   Use `wavWhisperSingleFile.py` to transcribe a specific WAV file using Whisper.
+- **Real Answers via RAG:**  
+  Connects to knowledge sources (documentation, FAQs, ticket databases) using retrieval-augmented generation for accurate, up-to-date responses.
 
-3. **Work With Datasets**  
-   Run `DataSet.py` to download and prepare the LibriSpeech dataset.
+- **Intent & Slot Extraction:**  
+  Understands customer requests and extracts actionable details for tasks like refunds, order tracking, or plan changes.
 
-4. **Test API Integration**  
-   Use `STTApi.py` to send sample audio to your speech-to-text API.
+- **Smart Escalation:**  
+  Confidence-based handoff to human agents, including a context summary for efficient resolution.
 
----
-
-## Requirements
-
-- Python 3.8+
-- `pyaudio` (for recording)
-- `keyboard` (for keypress detection)
-- `whisper` (for local transcription)
-- `pydub` and `ffmpeg` (for audio conversion)
-- `requests` (for downloading datasets)
+- **Admin UI:**  
+  Simple interface for viewing conversation logs, analytics, and adjusting persona/canned responses.
 
 ---
 
-## Getting Started
+## How It Works
 
-1. Install dependencies:
-   ```
-   pip install pyaudio keyboard openai-whisper pydub requests
-   ```
-2. Run any script as needed:
-   ```
-   python SimpleSTT.py
-   python wavAPIDirectory.py
-   python wavWhisperSingleFile.py
-   python DataSet.py
-   python STTApi.py
-   ```
+1. **User Interaction:**  
+   Customers interact via chat (or voice), asking questions or requesting actions.
+
+2. **LLM + RAG:**  
+   The system uses LLMs and retrieval from business data sources to generate accurate, context-aware responses.
+
+3. **Business Logic Connectors:**  
+   Integrates with backend systems to perform actions (e.g., process refunds, track orders).
+
+4. **Confidence-Based Escalation:**  
+   If the AI is unsure, it hands off to a human agent, providing a summary of the conversation and extracted details.
+
+5. **Admin Tools:**  
+   Admins can review logs, monitor analytics, and tweak the system’s persona and canned replies.
 
 ---
 
-**Enjoy experimenting with speech-to-text!**
+## Project Structure
 
+- `STTPhase/`  
+  Core speech-to-text and voice chat modules.
+
+
+## Vision
+
+Deliver customer care that feels truly conversational, solves problems reliably, and knows when to escalate — blending the best of AI and human support.
+
+---
