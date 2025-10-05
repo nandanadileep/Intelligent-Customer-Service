@@ -7,6 +7,7 @@ load_dotenv()  # Loads variables from .env
 
 # --- Load API key from config file ---
 api_key = os.getenv("ELEVENLABS_API_KEY")
+api_key = "sk_57ae3b6b247a6ca193723a5e3b0053957a7df45a0af19936"
 
 CONFIG_PATH = "config.json"
 with open(CONFIG_PATH, "r") as f:

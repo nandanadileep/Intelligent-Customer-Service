@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>voiceLLM Web</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>voiceLLM</h1>
+      <p class="subtitle">Talk to your RAG assistant</p>
+
+      <section class="card controls">
+        <div class="recording">
+          <button id="recordBtn" class="primary">Start Recording</button>
+          <button id="stopBtn" class="secondary" disabled>Stop</button>
+          <span id="timer">00:00</span>
+        </div>
+        <div class="or">or</div>
+        <div class="upload">
+          <input type="file" id="fileInput" accept="audio/*" />
+          <button id="sendFileBtn" class="secondary">Send File</button>
+        </div>
+      </section>
+
+      <section class="card status">
+        <div id="status">Idle</div>
+      </section>
+
+      <section class="grid">
+        <div class="card">
+          <h2>Transcript</h2>
+          <pre id="transcript"></pre>
+        </div>
+        <div class="card">
+          <h2>Answer</h2>
+          <pre id="answer"></pre>
+        </div>
+      </section>
+
+      <section class="card audio">
+        <h2>Response Audio</h2>
+        <audio id="player" controls></audio>
+        <div class="hint">If audio does not play, check your backend URL and CORS.</div>
+      </section>
+
+      <footer>
+        <a href="https://github.com/" target="_blank" rel="noreferrer">Deployed via GitHub Pages</a>
+      </footer>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+  </html>
+
+
