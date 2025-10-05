@@ -222,3 +222,13 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Railway deployment - Generated files
+elevenAudio/*.mp3
+query_*.txt
+query_*.wav
+response_*.mp3
+
+# Model cache
+.cache/
+huggingface/

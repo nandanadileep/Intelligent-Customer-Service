@@ -29,7 +29,7 @@ from TTSPhase.ElevenLabsAPIText import genAudioText
 
 app = FastAPI(title="voiceLLM Server")
 
-# Allow GitHub Pages host and local dev by default
+# CORS - Allow all origins for now (restrict in production)
 allowed_origins = os.getenv('ALLOWED_ORIGINS', '*')
 app.add_middleware(
     CORSMiddleware,
@@ -100,46 +100,75 @@ def ensure_wav(input_bytes: bytes, target_wav_path: str, original_filename: str)
             pass
 
 
-@app.post('/process')
-async def process(file: UploadFile = File(...)):
-    timestamp = time.strftime('%Y%m%d_%H%M%S')
-    base_name = f"query_{timestamp}.wav"
-    save_path = os.path.join(uploads_dir, base_name)
-
-    # Read upload into memory and store/convert to wav
-    content = await file.read()
-    stored_path = ensure_wav(content, save_path, file.filename or 'upload.webm')
-
-    # Choose directory and filename for processAudio API
-    directory = os.path.dirname(stored_path)
-    filename = os.path.basename(stored_path)
-
-    # Transcribe
-    transcript: Optional[str] = processAudio(filename, directory=directory)
-    if not transcript:
-        return JSONResponse(status_code=400, content={'error': 'transcription_failed'})
-
-    # RAG answer
-    answer: str = ask_query_with_grpo(transcript)
-
-    # TTS
-    audio_filename = f"response_{timestamp}"
-    audio_path = genAudioText(answer, filename=audio_filename, directory=tts_audio_dir)
-
-    audio_url = None
-    if audio_path and os.path.exists(audio_path):
-        # Convert absolute path to public /audio URL
-        audio_url = f"/audio/{os.path.basename(audio_path)}"
-
+@app.get('/')
+def root():
+    """Health check endpoint for Railway"""
     return {
-        'transcript': transcript,
-        'answer': answer,
-        'audio_url': audio_url,
+        'status': 'healthy',
+        'message': 'voiceLLM server running',
+        'version': '1.0.0'
     }
 
 
-@app.get('/')
-def root():
-    return {'ok': True, 'message': 'voiceLLM server running'}
+@app.get('/health')
+def health():
+    """Additional health check endpoint"""
+    return {'status': 'ok'}
 
 
+@app.post('/process')
+async def process(file: UploadFile = File(...)):
+    """Main pipeline: STT -> RAG -> TTS"""
+    try:
+        timestamp = time.strftime('%Y%m%d_%H%M%S')
+        base_name = f"query_{timestamp}.wav"
+        save_path = os.path.join(uploads_dir, base_name)
+
+        # Read upload into memory and store/convert to wav
+        content = await file.read()
+        stored_path = ensure_wav(content, save_path, file.filename or 'upload.webm')
+
+        # Choose directory and filename for processAudio API
+        directory = os.path.dirname(stored_path)
+        filename = os.path.basename(stored_path)
+
+        # Transcribe
+        transcript: Optional[str] = processAudio(filename, directory=directory)
+        if not transcript:
+            return JSONResponse(status_code=400, content={'error': 'transcription_failed'})
+
+        # RAG answer
+        answer: str = ask_query_with_grpo(transcript)
+
+        # TTS
+        audio_filename = f"response_{timestamp}"
+        audio_path = genAudioText(answer, filename=audio_filename, directory=tts_audio_dir)
+
+        audio_url = None
+        if audio_path and os.path.exists(audio_path):
+            # Convert absolute path to public /audio URL
+            audio_url = f"/audio/{os.path.basename(audio_path)}"
+
+        return {
+            'transcript': transcript,
+            'answer': answer,
+            'audio_url': audio_url,
+        }
+    
+    except Exception as e:
+        # Better error handling for production
+        print(f"Error in /process endpoint: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={'error': 'internal_server_error', 'details': str(e)}
+        )
+
+
+# For local development
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
+
+    
