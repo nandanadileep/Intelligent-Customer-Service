@@ -1,0 +1,59 @@
+:root {
+  --bg: #0b1020;
+  --card: #121a33;
+  --accent: #6aa7ff;
+  --text: #e7eefc;
+  --muted: #a9b6cf;
+  --danger: #ff7a7a;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
+  color: var(--text);
+  background: radial-gradient(1200px 600px at 20% -10%, #1b2855, transparent),
+              radial-gradient(800px 400px at 100% 0%, #17244c, transparent),
+              var(--bg);
+}
+
+.container { max-width: 960px; margin: 0 auto; padding: 24px; }
+h1 { margin: 8px 0 0; font-size: 28px; }
+.subtitle { margin: 6px 0 20px; color: var(--muted); }
+
+.card {
+  background: rgba(18, 26, 51, 0.7);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 16px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.recording { display: flex; align-items: center; gap: 10px; }
+.upload { display: flex; align-items: center; gap: 10px; }
+.or { color: var(--muted); }
+
+button {
+  appearance: none; border: none; cursor: pointer; padding: 10px 14px; border-radius: 10px;
+  color: var(--text); background: #1a254a; transition: transform .05s ease, background .2s;
+}
+button.primary { background: linear-gradient(135deg, #3f7cff, #6aa7ff); color: #06112b; font-weight: 600; }
+button.secondary { background: #1a254a; }
+button:disabled { opacity: .6; cursor: not-allowed; }
+button:active { transform: translateY(1px); }
+
+#timer { font-variant-numeric: tabular-nums; color: var(--muted); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+pre { white-space: pre-wrap; word-break: break-word; margin: 0; min-height: 80px; padding: 8px; background: #0e1630; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); }
+
+.status { margin-top: 12px; }
+.audio { margin-top: 16px; }
+.hint { margin-top: 6px; color: var(--muted); font-size: 13px; }
+
+footer { margin-top: 24px; color: var(--muted); }
+
+

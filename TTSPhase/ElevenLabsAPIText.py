@@ -4,10 +4,13 @@ import json
 import time
 from dotenv import load_dotenv
 
-load_dotenv()  # Loads variables from .env
+# Load .env from project root to avoid CWD issues when run from subdirectories
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(dotenv_path=CURRENT_DIR, override=False)
+
+api_key = os.getenv("ELEVENLABS_API_KEY")
 
 # --- Load API key and config ---
-api_key = os.getenv("ELEVENLABS_API_KEY")
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
 with open(CONFIG_PATH, "r") as f:
     config = json.load(f)

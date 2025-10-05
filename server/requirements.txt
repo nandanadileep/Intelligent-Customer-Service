@@ -1,0 +1,18 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+starlette==0.38.5
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# RAG/ML dependencies (align with your local environment)
+openai-whisper==20231117
+torch>=2.1.0
+transformers>=4.42.0
+sentence-transformers>=2.2.2
+faiss-cpu>=1.7.4
+langchain>=0.2.0
+langchain-community>=0.2.0
+langchain-huggingface>=0.0.3
+
+
